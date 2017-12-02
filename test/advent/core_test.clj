@@ -28,3 +28,9 @@
 
 (deftest advent-1-2-12131415
   (is (= 4 (advent-1-2 "12131415"))))
+
+(deftest advent-2-1-example
+  (is (= 18 (advent-2-1 [[5 1 9 5] [7 5 3] [2 4 6 8]]))))
+
+(deftest advent-2-2-example
+  (is (= 9 (advent-2-2 [[5 9 2 8] [9 4 7 3] [3 8 6 5]]))))
