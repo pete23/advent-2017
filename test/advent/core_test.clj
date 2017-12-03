@@ -34,3 +34,4 @@
 
 (deftest advent-2-2-example
   (is (= 9 (advent-2-2 [[5 9 2 8] [9 4 7 3] [3 8 6 5]]))))
+
