@@ -1,4 +1,5 @@
-(ns advent.core)
+(ns advent.core
+  (:use clojure.math.numeric-tower))
 
 ; http://adventofcode.com/2017/day/1
 
@@ -72,3 +73,44 @@
 
 (defn advent-2-2 [input]
   (reduce + (map first-even-division input)))
+
+;; day 3 - this sucks - there's an analytic formula for spiral number to coordinates
+;; but unfortunately my discrete maths has decayed and it was easier just to generate the spiral
+
+(defn manhattan-distance-to-origin [[x y]]
+  (+ (abs x) (abs y)))
+
+(defn add-coords [[a b] [c d]]
+  (vector (+ a c) (+ b d)))
+
+(defn next-arm [step prev]
+  (let [chains (if (odd? step)
+                 [[1 0] [0 1]]
+                 [[-1 0] [0 -1]])]
+    (drop 1 (reductions add-coords prev (mapcat #(repeat step %) chains)))))
+
+(defn lazy-seq-of-spiral-cartesians
+  ([] (cons [0 0] (lazy-seq (lazy-seq-of-spiral-cartesians 1 '(0 0)))))
+  ([step prev] (let [arm (next-arm step prev)]
+              (concat arm (lazy-seq (lazy-seq-of-spiral-cartesians (inc step) (last arm)))))))
+
+(def spiral (lazy-seq-of-spiral-cartesians))
+
+(defn advent-3-1 [spiral-number]
+  (->> spiral-number
+       (dec) ; correct their coordinate system
+       (nth spiral)
+       (manhattan-distance-from-origin)))
+
+(defn adjacent-sums [grid coords]
+  (reduce + (remove nil? (map #(get grid (add-coords coords %)) [[-1 -1] [-1 0] [-1 1] [0 -1] [0 1] [1 1] [1 0] [1 -1]]))))
+
+(defn add-adjacent-sum [[_ grid] next-coords]
+  (let [next-value (adjacent-sums grid next-coords)]
+    (vector next-value (assoc grid next-coords next-value))))
+    
+(defn advent-3-2 [spiral-number]
+  (some #(if (< spiral-number (first %)) (first %))
+        (reductions add-adjacent-sum [1 { '(0 0) 1 }] (drop 1 spiral))))
+
+(advent-3-2 368078)
