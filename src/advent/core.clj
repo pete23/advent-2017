@@ -120,6 +120,8 @@
                          (clojure.string/split-lines)
                          (map #(clojure.string/split % #"\s"))))
 
+;; if we stuff stuff into a set and the set has the same cardinality as the stuff
+;; then there are no duplicates in the stuff
 (defn check-no-duplicates [stuff]
   (if (= (count stuff)
          (count (into #{} stuff)))
@@ -128,11 +130,6 @@
 (defn advent-4-1 []
   (reduce + (map check-no-duplicates advent-4-input)))
 
-(defn check-no-anagrams [stuff]
-  (if (= (count stuff)
-         (count (into #{} (map sort stuff))))
-    1 0))
-
 (defn advent-4-2 []
-  (reduce + (map check-no-anagrams advent-4-input)))
+  (reduce + (map check-no-duplicates (map #(map sort %) advent-4-input))))
 
