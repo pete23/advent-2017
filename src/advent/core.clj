@@ -114,3 +114,25 @@
         (reductions add-adjacent-sum [1 { '(0 0) 1 }] (drop 1 spiral))))
 
 (advent-3-2 368078)
+
+(def advent-4-input (->> "advent-4-input.txt"
+                         (slurp)
+                         (clojure.string/split-lines)
+                         (map #(clojure.string/split % #"\s"))))
+
+(defn check-no-duplicates [stuff]
+  (if (= (count stuff)
+         (count (into #{} stuff)))
+    1 0))
+
+(defn advent-4-1 []
+  (reduce + (map check-no-duplicates advent-4-input)))
+
+(defn check-no-anagrams [stuff]
+  (if (= (count stuff)
+         (count (into #{} (map sort stuff))))
+    1 0))
+
+(defn advent-4-2 []
+  (reduce + (map check-no-anagrams advent-4-input)))
+
