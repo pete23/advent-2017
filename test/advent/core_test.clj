@@ -35,3 +35,6 @@
 (deftest advent-2-2-example
   (is (= 9 (advent-2-2 [[5 9 2 8] [9 4 7 3] [3 8 6 5]]))))
 
+(deftest spiral-to-cartesian-coordinates
+  (is (= '([0 0] [1 0] [1 1] [0 1] [-1 1] [-1 0] [-1 -1] [0 -1] [1 -1] [2 -1] [2 0] [2 1] [2 2] [1 2] [0 2] [-1 2] [-2 2] [-2 1] [-2 0] [-2 -1] [-2 -2] [-1 -2] [0 -2] [1 -2] [2 -2] [3 -2])
+         (map spiral-to-cartesian (range 26)))))
