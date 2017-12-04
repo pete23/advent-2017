@@ -115,6 +115,8 @@
 
 (advent-3-2 368078)
 
+;; https://adventofcode.com/2017/day/4
+
 (def advent-4-input (->> "advent-4-input.txt"
                          (slurp)
                          (clojure.string/split-lines)
