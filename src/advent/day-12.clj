@@ -15,15 +15,24 @@
   (if (not-empty (clojure.set/intersection group next-group))
     (vector (clojure.set/union group next-group) unmatched-groups)
     (vector group (conj unmatched-groups next-group))))
-  
-(defn group-until-fixed [group unmatched]
-  (let [[new-group new-unmatched]
-        (reduce intersect-groups [group []] unmatched)]
-    (if (= group new-group)
-      group 
-      (recur new-group new-unmatched))))
+
+(defn fix-point [f x]
+  (let [fx (f x)]
+    (if (= fx x) x
+        (recur f fx))))
+
+(defn regroup [[group unmatched]]
+  (reduce intersect-groups [group []] unmatched))
 
 (defn day-12-1 []
   (let [[zero-group & groups] (read-file-as-list-of-sets-of-numbers "day-12.input")]
-    (count (group-until-fixed zero-group groups))))
-  
+    (count (first (fix-point regroup [zero-group groups])))))
+
+(defn group-all [groups remaining]
+  (if (empty? remaining) groups
+      (let [[group remaining] (fix-point regroup [(first remaining) (rest remaining)])]
+        (recur (conj groups group) remaining))))
+
+(defn day-12-2 []
+  (let [groups (read-file-as-list-of-sets-of-numbers "day-12.input")]
+    (count (group-all [] groups))))
