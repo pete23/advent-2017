@@ -35,14 +35,43 @@
                       "gyxo (61)"
                       "cntj (57)"]))
 
+(def input (read-file-as-list-of-programs "input/day-7.txt"))
+
 ; the one at the base cannot be a child
 (defn find-base [programs]
-  (let [all-children (set (mapcat :children programs))]
-      (some #(if (not (all-children %)) %) (map :name programs))))
+  (let [child? (set (mapcat :children programs))]
+      (some #(if (not (child? %)) %) (map :name programs))))
 
 (deftest find-base-works
   (is (= "tknk" (find-base day-7-test))))
 
 (defn part-1 []
-  (find-base (read-file-as-list-of-programs "input/day-7.txt")))
+  (find-base input))
 
+(defn raise-difference-error [names-and-weights program-map]
+  (let [freqs (frequencies (map second names-and-weights))
+        right-weight (some #(if (not= (second %) 1) (first %)) freqs)
+        wrong-weight (some #(if (= (second %) 1) (first %)) freqs)
+        adjustment (- right-weight wrong-weight)
+        wrong-name (some #(if (= (second %) wrong-weight) (first %)) names-and-weights)
+        wrong-program (program-map wrong-name)]
+    (throw (RuntimeException. (str wrong-name " should be " (+ adjustment (:weight wrong-program)))))))
+
+(defn total-weight [program-name program-map]
+  (let [program (program-map program-name)]
+    (+ (:weight program)
+       (if (:children program)
+         (let [name-and-weights (map #(vector % (total-weight % program-map)) (:children program))]
+           (if (apply = (map second name-and-weights))
+             (reduce + (map second name-and-weights))
+             (raise-difference-error name-and-weights program-map)))
+         0))))
+
+;; throws an exception if the tree is unbalanced
+(defn add-total-weight [programs]
+  (let [program-map (into {} (map #(vector (:name %) %) programs))
+        base-program-name (find-base programs)]
+    (total-weight base-program-name program-map)))
+
+(defn part-2 []
+  (add-total-weight input))
