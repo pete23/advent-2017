@@ -1,8 +1,6 @@
 (ns advent.day-18
   (:use clojure.test))
 
-                           
-
 ;; TODO use spec to represent this
 ;; program state
 (def initial-state {:program-counter 0
@@ -31,15 +29,15 @@
     (assoc state :program-counter (+ (:program-counter state) operand -1)) ;; -1 corrects the default PC advance
     state))
 
-(defn rcv [state _ register-value _]
+(defn recover [state _ register-value _]
   (if (not= 0 register-value)
     (assoc state :recovered-frequency (:sound-frequency state))
     state))
 
-(defn snd [state _ register-value _]
+(defn sound [state _ register-value _]
   (assoc state :sound-frequency register-value))
 
-(defn general-op [op-fn register operand-fn]
+(defn create-op [op-fn register operand-fn]
   (fn [state]
     (let [register-value (or (register (:registers state) 0))
           operand (if operand-fn (operand-fn state))]
@@ -47,23 +45,19 @@
 
 (defn plain-set [_ v] v)
 
-;; starting to thing protocols would be a better way of doing this
-(defn create-instruction [opcode register operand-fn]
-  ;; map each instruction to a function over the current program state
-  (let [mk-op #(general-op % register operand-fn)]
-    (case opcode
-      "set" (mk-op (reg-op-fn plain-set))
-      "snd" (mk-op snd)
-      "add" (mk-op (reg-op-fn +))
-      "mul" (mk-op (reg-op-fn *))
-      "mod" (mk-op (reg-op-fn rem))
-      "rcv" (mk-op rcv)
-      "jgz" (mk-op jgz))))
+(def instruction-set
+  {"set" (reg-op-fn plain-set)
+   "add" (reg-op-fn +)
+   "mul" (reg-op-fn *)
+   "mod" (reg-op-fn rem)
+   "snd" sound
+   "rcv" recover
+   "jgz" jgz})
 
-(defn create-instruction-from-strings [[opcode target-string operand-string]]
-  (let [target (keyword target-string)
-        operand (if operand-string (translate-operand-to-fn operand-string))]
-    (create-instruction opcode target operand)))
+(defn create-instruction-from-strings [[opcode register-string operand-string]]
+  (let [register (keyword register-string)
+        operand-fn (if operand-string (translate-operand-to-fn operand-string))]
+    (create-op (instruction-set opcode) register operand-fn)))
 
 (defn tokenize-string [string]
   (clojure.string/split string #"\s+"))
