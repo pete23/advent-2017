@@ -11,17 +11,23 @@
   (fn [state register register-value operand]
     (assoc-in state [:registers register] (op register-value operand))))
 
-(defn jgz [state _ register-value operand]
-  (if (> register-value 0)
-    (assoc state :program-counter (+ (:program-counter state) operand -1)) ;; -1 corrects the default PC advance
-    state))
+(defn jump [state size]
+  (assoc state :program-counter (+ (:program-counter state) size -1))) ;; -1 corrects the default PC advance  
+
+(defn cond-zero-jump-fn [cond-fn]
+  (fn [state _ register-value operand]
+    (if (cond-fn 0 register-value)
+      (jump state operand)
+      state)))
 
 (defn make-instructions []
   {"set" (reg-op-fn plain-set)
    "add" (reg-op-fn +)
+   "sub" (reg-op-fn -)
    "mul" (reg-op-fn *)
    "mod" (reg-op-fn rem)
-   "jgz" jgz})
+   "jnz" (cond-zero-jump-fn not=)
+   "jgz" (cond-zero-jump-fn <)})
 
 (defn create-op [op-fn register operand-fn]
   (fn [state]
