@@ -4,6 +4,7 @@
 (defrecord StateCondition [write move next])
 (defn sc [write move next] (StateCondition. write move next))
 
+;; you'll note that i cba parsing the input file as it wasn't terrifying
 (def machine-definition
   {:a [(sc 1 1 :b) (sc 0 -1 :c)]
    :b [(sc 1 -1 :a) (sc 1 1 :d)]
