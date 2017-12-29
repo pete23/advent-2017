@@ -57,24 +57,44 @@
       \p (partner dance-line args))))
 
 (defn run-dance
-  ([dance-line instructions]
-   (reduce run-instruction dance-line instructions))
-  ([dance-line n instructions]
-   (if (= n 0) dance-line
-       (recur (run-dance dance-line instructions) (dec n) instructions))))
+  ([dance line]
+   (reduce run-instruction line dance))
+  ([dance line n]
+   (if (= n 0) line
+       (recur dance (run-dance dance line) (dec n)))))
 
 (defn part-1
   ([] (part-1 16 (read-input-file "input/day-16.txt")))
-  ([size input] (-> size
-                    (generate-starting-position)
-                    (run-dance input))))
+  ([size input] (->> size
+                     (generate-starting-position)
+                     (run-dance input))))
 
 (deftest part-1-test
   (is (= "baedc" (part-1 5 test-input))))
 
+;; let's divide and conquer assuming that the dance defines a program...
+;; ah ha! through this we discover that the dancing program has periodicity of 16
+;; EEEXCEPT we can't do this - we forget the partnering addresses by letter - doh
+(defn generate-first-dancer [n dance-output]
+  (mapv #(- (int %) (int \a)) dance-output))
+
+(defn apply-dancer [dancer input]
+  (mapv #(nth input %) dancer))
+
+(defn power-dancers-up-to-n
+  ([n first-dancer] (power-dancers-up-to-n n 1 first-dancer '()))
+  ([n x dancer acc] (if (> x n) acc
+                        (recur n (* 2 x) (apply-dancer dancer dancer) (conj acc [x dancer])))))
+
+;; ok, plan B - let's find the periodicity of the dance including the letters!
+(defn periodicity-of-dance
+  ([dance line] (periodicity-of-dance dance line #{}))
+  ([dance line seen] (if (seen line) seen
+                         (recur dance (run-dance dance line) (conj seen line)))))
+
 (defn part-2
-  ([] (part-2 16 (read-input-file "input/day-16.txt")))
-  ([size input] (run-dance size 100 input))
-  ([size n input] (-> size
-                    (generate-starting-position)
-                    (run-dance n input))))
+  ([] (part-2 (read-input-file "input/day-16.txt") (generate-starting-position 16) 1000000000))
+  ([dance line n]
+   (let [periodicity (count (periodicity-of-dance dance line))
+         remainder (rem n periodicity)]
+     (run-dance dance line remainder))))
