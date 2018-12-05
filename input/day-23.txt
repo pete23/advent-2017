@@ -1,5 +1,5 @@
-set b 99
-set c b
+set b 98
+set c 99
 jnz a 2
 jnz 1 5
 mul b 100
